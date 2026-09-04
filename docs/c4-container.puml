@@ -1,0 +1,36 @@
+@startuml
+title C4 — Container (Level 2): Exchange Rate Bot
+
+left to right direction
+skinparam shadowing false
+skinparam roundCorner 14
+skinparam defaultFontName Arial
+skinparam defaultTextAlignment center
+skinparam ArrowColor #4A5568
+skinparam ArrowFontColor #2D3748
+skinparam actor {
+  BackgroundColor #08427B
+  BorderColor #052E56
+  FontColor #FFFFFF
+}
+skinparam rectangle {
+  BorderColor #4A5568
+}
+
+actor user as "Пользователь" <<Person>>
+rectangle telegram as "<color:white><b>Telegram</b></color>\n\n<color:white>Внешняя платформа</color>" <<External System>> #666666
+
+frame "Vercel\n[Cloud platform]" as vercel #F6F8FA {
+  rectangle "Exchange Rate Bot" as bot_system <<System Boundary>> #EAF2F8 {
+    rectangle webhook_function as "<color:white><b>Webhook Application</b></color>\n\n<color:white>[Node.js, Fastify]</color>\n\n<color:white>Одна serverless-функция:</color>\n<color:white>обрабатывает /webhook, получает курс</color>\n<color:white>и отправляет ответ</color>" <<Container>> #1168BD
+  }
+}
+
+rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n\n<color:white>Внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
+
+user <--> telegram : Сообщения
+telegram <--> webhook_function : Webhook / Bot API\n[HTTPS, JSON]
+webhook_function <--> frankfurter : Latest rates API\n[HTTPS, JSON]
+
+footer Внутри системы нет БД: состояние между запросами не хранится
+@enduml
