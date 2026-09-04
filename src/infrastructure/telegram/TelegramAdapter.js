@@ -1,5 +1,8 @@
-export class TelegramAdapter {
+import { MessageSender } from '../../application/ports/MessageSender.js';
+
+export class TelegramAdapter extends MessageSender {
   constructor(token) {
+    super();
     this.token = token;
   }
 

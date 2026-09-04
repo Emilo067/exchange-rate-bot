@@ -2,9 +2,10 @@
   "name": "exchange-rate-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/main/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/main/server.js",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
