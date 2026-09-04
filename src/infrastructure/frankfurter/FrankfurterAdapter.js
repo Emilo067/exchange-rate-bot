@@ -1,4 +1,6 @@
-export class FrankfurterAdapter {
+import { RateProvider } from '../../application/ports/RateProvider.js';
+
+export class FrankfurterAdapter extends RateProvider {
   async getRate(base, target) {
     try {
       const response = await fetch(
