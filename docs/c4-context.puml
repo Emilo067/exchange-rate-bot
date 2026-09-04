@@ -1,0 +1,33 @@
+@startuml
+title C4 — System Context (Level 1): Exchange Rate Bot
+
+left to right direction
+skinparam shadowing false
+skinparam roundCorner 14
+skinparam defaultFontName Arial
+skinparam defaultTextAlignment center
+skinparam ArrowColor #4A5568
+skinparam ArrowFontColor #2D3748
+skinparam actor {
+  BackgroundColor #08427B
+  BorderColor #052E56
+  FontColor #FFFFFF
+}
+skinparam rectangle {
+  BorderColor #4A5568
+}
+
+actor user as "Пользователь\n\nЗапрашивает курс валюты" <<Person>>
+
+rectangle telegram as "<color:white><b>Telegram</b></color>\n\n<color:white>Внешняя платформа обмена</color>\n<color:white>сообщениями</color>" <<External System>> #666666
+
+rectangle bot as "<color:white><b>Exchange Rate Bot</b></color>\n\n<color:white>Принимает код валюты и сообщает</color>\n<color:white>её курс к USD</color>" <<System>> #1168BD
+
+rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n\n<color:white>Внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
+
+user <--> telegram : Отправляет код валюты\nи получает результат
+telegram <--> bot : Передаёт обновления и ответы\n[HTTPS, JSON]
+bot <--> frankfurter : Запрашивает актуальный курс\n[HTTPS, JSON]
+
+footer Синий блок — проектируемая система; серые блоки — внешние системы
+@enduml

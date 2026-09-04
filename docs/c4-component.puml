@@ -1,0 +1,65 @@
+@startuml
+title C4 — Component (Level 3): Webhook Application
+
+top to bottom direction
+skinparam shadowing false
+skinparam roundCorner 12
+skinparam defaultFontName Arial
+skinparam defaultTextAlignment center
+skinparam ArrowColor #4A5568
+skinparam ArrowFontColor #2D3748
+skinparam ArrowFontSize 11
+skinparam package {
+  BorderColor #8FA3B8
+  BackgroundColor #F6F8FA
+}
+skinparam rectangle {
+  BorderColor #4A5568
+}
+
+rectangle telegram as "<color:white><b>Telegram</b></color>\n<color:white>[External System]</color>" #666666
+rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n<color:white>[External System]</color>" #666666
+
+package "Webhook Application  [Node.js, Fastify]" as application_container {
+  rectangle composition_root as "<color:white><b>Composition Root</b></color>\n\n<color:white>src/main/server.js</color>\n<color:white>Создаёт и связывает объекты</color>" #1168BD
+
+  package "Presentation" {
+    rectangle fastify_server as "<color:white><b>Fastify Server</b></color>\n\n<color:white>presentation/server.js</color>\n<color:white>Регистрирует POST /webhook</color>" #2F80C3
+    rectangle webhook_controller as "<color:white><b>Telegram Webhook Controller</b></color>\n\n<color:white>TelegramWebhookController.js</color>\n<color:white>Проверяет запрос и вызывает use case</color>" #2F80C3
+  }
+
+  package "Application" {
+    rectangle use_case as "<color:white><b>Exchange Rate Use Case</b></color>\n\n<color:white>ExchangeRateUseCase.js</color>\n<color:white>Оркестрирует сценарий</color>" #2F80C3
+    rectangle rate_provider_port as "<color:white><b>Rate Provider Port</b></color>\n\n<color:white>ports/RateProvider.js</color>" #2F80C3
+    rectangle message_sender_port as "<color:white><b>Message Sender Port</b></color>\n\n<color:white>ports/MessageSender.js</color>" #2F80C3
+  }
+
+  package "Domain" {
+    rectangle currency_parser as "<color:white><b>Currency Parser</b></color>\n\n<color:white>CurrencyParser.js</color>\n<color:white>Извлекает код валюты</color>" #2F80C3
+  }
+
+  package "Infrastructure" {
+    rectangle frankfurter_adapter as "<color:white><b>Frankfurter Adapter</b></color>\n\n<color:white>FrankfurterAdapter.js</color>" #2F80C3
+    rectangle telegram_adapter as "<color:white><b>Telegram Adapter</b></color>\n\n<color:white>TelegramAdapter.js</color>" #2F80C3
+  }
+}
+
+composition_root --> fastify_server : создаёт app
+composition_root --> webhook_controller : внедряет use case
+composition_root --> use_case : внедряет порты
+composition_root --> frankfurter_adapter : создаёт адаптер
+composition_root --> telegram_adapter : создаёт адаптер
+
+telegram --> fastify_server : POST /webhook
+fastify_server --> webhook_controller : handle(request, reply)
+webhook_controller --> use_case : execute(chatId, text)
+use_case --> currency_parser : extractCurrencyCode(text)
+use_case --> rate_provider_port : getRate(code, "USD")
+use_case --> message_sender_port : sendMessage(chatId, text)
+frankfurter_adapter ..|> rate_provider_port : реализует
+telegram_adapter ..|> message_sender_port : реализует
+frankfurter_adapter --> frankfurter : GET /v1/latest
+telegram_adapter --> telegram : POST /sendMessage
+
+footer Сплошная стрелка — вызов; пунктирная — реализация application-порта
+@enduml
