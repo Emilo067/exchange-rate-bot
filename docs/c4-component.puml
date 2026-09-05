@@ -1,5 +1,5 @@
 @startuml
-title C4 — Component (Level 3): Webhook Application
+title C4 — Component (Level 3): Webhook Application (Backend)
 
 top to bottom direction
 skinparam shadowing false
@@ -30,7 +30,7 @@ package "Webhook Application  [Node.js, Fastify]" as application_container {
   }
 
   package "Application" {
-    rectangle use_case as "<color:white><b>Exchange Rate Use Case</b></color>\n\n<color:white>ExchangeRateUseCase.js</color>\n<color:white>Оркестрирует сценарий</color>" #2F80C3
+    rectangle use_case as "<color:white><b>Exchange Rate Use Case</b></color>\n\n<color:white>ExchangeRateUseCase.js</color>\n<color:white>Оркестрирует сценарий и fallback</color>" #2F80C3
     rectangle rate_provider_port as "<color:white><b>Rate Provider Port</b></color>\n\n<color:white>ports/RateProvider.js</color>" #2F80C3
     rectangle message_sender_port as "<color:white><b>Message Sender Port</b></color>\n\n<color:white>ports/MessageSender.js</color>" #2F80C3
   }
@@ -48,7 +48,7 @@ package "Webhook Application  [Node.js, Fastify]" as application_container {
 
 composition_root --> fastify_server : создаёт app
 composition_root --> webhook_controller : внедряет use case
-composition_root --> use_case : внедряет порты
+composition_root --> use_case : передаёт массив провайдеров
 composition_root --> frankfurter_adapter : создаёт адаптер
 composition_root --> open_exchange_adapter : создаёт адаптер
 composition_root --> telegram_adapter : создаёт адаптер

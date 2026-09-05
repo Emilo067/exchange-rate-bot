@@ -1,0 +1,35 @@
+@startuml
+title C4 — Component (Level 3): Svelte Mini App (Frontend)
+
+left to right direction
+skinparam shadowing false
+skinparam roundCorner 12
+skinparam defaultFontName Arial
+skinparam defaultTextAlignment center
+skinparam ArrowColor #4A5568
+skinparam ArrowFontColor #2D3748
+skinparam package {
+  BorderColor #8FA3B8
+  BackgroundColor #F6F8FA
+}
+skinparam rectangle {
+  BorderColor #4A5568
+}
+
+rectangle telegram as "<color:white><b>Telegram WebView</b></color>\n\n<color:white>[External Runtime]</color>" #666666
+rectangle open_exchange as "<color:white><b>Open Exchange API</b></color>\n\n<color:white>[External System]</color>" #666666
+
+package "Rate Wave Mini App  [Svelte, Vite]" {
+  rectangle bootstrap as "<color:white><b>Bootstrap</b></color>\n\n<color:white>src/main.js</color>\n<color:white>Монтирует Svelte-приложение</color>" #1168BD
+  rectangle app as "<color:white><b>App</b></color>\n\n<color:white>src/App.svelte</color>\n<color:white>Ввод кода, загрузка курса,</color>\n<color:white>Telegram-тема и SVG-анимация</color>" #2F80C3
+  rectangle styles as "<color:white><b>Global Styles</b></color>\n\n<color:white>src/app.css</color>\n<color:white>Базовый сброс стилей</color>" #2F80C3
+}
+
+telegram --> bootstrap : Загружает приложение\n[HTTPS]
+bootstrap --> app : mount(App)
+bootstrap --> styles : импортирует CSS
+app --> telegram : Telegram.WebApp.ready()\nи expand()
+app --> open_exchange : GET /v6/latest/{code}\n[HTTPS, JSON]
+
+footer Mini App не зависит от backend: курс для интерфейса запрашивается напрямую
+@enduml
