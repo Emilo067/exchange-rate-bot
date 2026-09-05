@@ -1,8 +1,8 @@
 import { CurrencyParser } from '../domain/CurrencyParser.js';
 
 export class ExchangeRateUseCase {
-  constructor(rateProvider, messageSender) {
-    this.rateProvider = rateProvider;
+  constructor(rateProviders, messageSender) {
+    this.rateProviders = rateProviders;
     this.messageSender = messageSender;
   }
 
@@ -22,23 +22,27 @@ export class ExchangeRateUseCase {
       return;
     }
 
-    try {
-      const rate = await this.rateProvider.getRate(currencyCode, 'USD');
+    for (const provider of this.rateProviders) {
+      try {
+        const rate = await provider.getRate(currencyCode, 'USD');
 
-      if (rate !== null && rate !== undefined) {
+        if (typeof rate !== 'number') {
+          continue;
+        }
+
         await this.messageSender.sendMessage(
           chatId,
           `1 ${currencyCode} = ${rate} USD`,
         );
         return;
+      } catch {
+        continue;
       }
-    } catch {
-      // Ошибка провайдера обрабатывается единым сообщением ниже.
     }
 
     await this.messageSender.sendMessage(
       chatId,
-      'Не удалось получить курс валюты.',
+      'Не удалось получить курс валюты ни из одного источника.',
     );
   }
 }

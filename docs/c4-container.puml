@@ -27,10 +27,12 @@ frame "Vercel\n[Cloud platform]" as vercel #F6F8FA {
 }
 
 rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n\n<color:white>Внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
+rectangle open_exchange as "<color:white><b>Open Exchange API</b></color>\n\n<color:white>Резервный внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
 
 user <--> telegram : Сообщения
 telegram <--> webhook_function : Webhook / Bot API\n[HTTPS, JSON]
 webhook_function <--> frankfurter : Latest rates API\n[HTTPS, JSON]
+webhook_function <--> open_exchange : Fallback rates API\n[HTTPS, JSON]
 
 footer Внутри системы нет БД: состояние между запросами не хранится
 @enduml
