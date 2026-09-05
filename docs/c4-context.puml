@@ -25,9 +25,12 @@ rectangle bot as "<color:white><b>Exchange Rate Bot</b></color>\n\n<color:white>
 
 rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n\n<color:white>Внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
 
+rectangle open_exchange as "<color:white><b>Open Exchange API</b></color>\n\n<color:white>Резервный внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
+
 user <--> telegram : Отправляет код валюты\nи получает результат
 telegram <--> bot : Передаёт обновления и ответы\n[HTTPS, JSON]
 bot <--> frankfurter : Запрашивает актуальный курс\n[HTTPS, JSON]
+bot <--> open_exchange : Использует при ошибке основного источника\n[HTTPS, JSON]
 
 footer Синий блок — проектируемая система; серые блоки — внешние системы
 @enduml
