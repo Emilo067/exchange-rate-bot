@@ -1,5 +1,5 @@
 @startuml
-title C4 — Container (Level 2): Exchange Rate Bot
+title C4 — Container (Level 2): Exchange Rate Platform
 
 left to right direction
 skinparam shadowing false
@@ -20,19 +20,25 @@ skinparam rectangle {
 actor user as "Пользователь" <<Person>>
 rectangle telegram as "<color:white><b>Telegram</b></color>\n\n<color:white>Внешняя платформа</color>" <<External System>> #666666
 
-frame "Vercel\n[Cloud platform]" as vercel #F6F8FA {
+frame "Vercel Cloud" as vercel #F6F8FA {
   rectangle "Exchange Rate Bot" as bot_system <<System Boundary>> #EAF2F8 {
-    rectangle webhook_function as "<color:white><b>Webhook Application</b></color>\n\n<color:white>[Node.js, Fastify]</color>\n\n<color:white>Одна serverless-функция:</color>\n<color:white>обрабатывает /webhook, получает курс</color>\n<color:white>и отправляет ответ</color>" <<Container>> #1168BD
+    rectangle webhook_function as "<color:white><b>Webhook Application</b></color>\n\n<color:white>[Node.js, Fastify]</color>\n\n<color:white>Serverless-функция:</color>\n<color:white>обрабатывает /webhook и отвечает</color>\n<color:white>через Telegram Bot API</color>" <<Container>> #1168BD
+  }
+
+  rectangle "Rate Wave Mini App" as mini_app_system <<System Boundary>> #EAF2F8 {
+    rectangle svelte_app as "<color:white><b>Svelte Mini App</b></color>\n\n<color:white>[Svelte, Vite, JavaScript]</color>\n\n<color:white>Статический веб-интерфейс:</color>\n<color:white>принимает код валюты и показывает</color>\n<color:white>курс к USD</color>" <<Container>> #1168BD
   }
 }
 
-rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n\n<color:white>Внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
-rectangle open_exchange as "<color:white><b>Open Exchange API</b></color>\n\n<color:white>Резервный внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
+rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n\n<color:white>Основной сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
+rectangle open_exchange as "<color:white><b>Open Exchange API</b></color>\n\n<color:white>Сервис курсов валют</color>" <<External System>> #666666
 
-user <--> telegram : Сообщения
+user <--> telegram : Сообщения и запуск приложения
 telegram <--> webhook_function : Webhook / Bot API\n[HTTPS, JSON]
+telegram --> svelte_app : Telegram WebView\n[HTTPS]
 webhook_function <--> frankfurter : Latest rates API\n[HTTPS, JSON]
 webhook_function <--> open_exchange : Fallback rates API\n[HTTPS, JSON]
+svelte_app <--> open_exchange : Latest rates API\n[HTTPS, JSON]
 
-footer Внутри системы нет БД: состояние между запросами не хранится
+footer Backend и Mini App развёртываются как два независимых Vercel-проекта
 @enduml

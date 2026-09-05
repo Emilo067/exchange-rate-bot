@@ -1,5 +1,5 @@
 @startuml
-title C4 — System Context (Level 1): Exchange Rate Bot
+title C4 — System Context (Level 1): Exchange Rate Platform
 
 left to right direction
 skinparam shadowing false
@@ -19,18 +19,22 @@ skinparam rectangle {
 
 actor user as "Пользователь\n\nЗапрашивает курс валюты" <<Person>>
 
-rectangle telegram as "<color:white><b>Telegram</b></color>\n\n<color:white>Внешняя платформа обмена</color>\n<color:white>сообщениями</color>" <<External System>> #666666
+rectangle telegram as "<color:white><b>Telegram</b></color>\n\n<color:white>Внешняя платформа</color>\n<color:white>сообщений и Mini Apps</color>" <<External System>> #666666
 
-rectangle bot as "<color:white><b>Exchange Rate Bot</b></color>\n\n<color:white>Принимает код валюты и сообщает</color>\n<color:white>её курс к USD</color>" <<System>> #1168BD
+rectangle bot as "<color:white><b>Exchange Rate Bot</b></color>\n\n<color:white>Обрабатывает сообщения</color>\n<color:white>и отвечает с курсом к USD</color>" <<System>> #1168BD
 
-rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n\n<color:white>Внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
+rectangle mini_app as "<color:white><b>Rate Wave Mini App</b></color>\n\n<color:white>Интерактивный интерфейс</color>\n<color:white>проверки курса</color>" <<System>> #1168BD
 
-rectangle open_exchange as "<color:white><b>Open Exchange API</b></color>\n\n<color:white>Резервный внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
+rectangle frankfurter as "<color:white><b>Frankfurter API</b></color>\n\n<color:white>Основной внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
 
-user <--> telegram : Отправляет код валюты\nи получает результат
-telegram <--> bot : Передаёт обновления и ответы\n[HTTPS, JSON]
-bot <--> frankfurter : Запрашивает актуальный курс\n[HTTPS, JSON]
-bot <--> open_exchange : Использует при ошибке основного источника\n[HTTPS, JSON]
+rectangle open_exchange as "<color:white><b>Open Exchange API</b></color>\n\n<color:white>Внешний сервис</color>\n<color:white>курсов валют</color>" <<External System>> #666666
 
-footer Синий блок — проектируемая система; серые блоки — внешние системы
+user <--> telegram : Отправляет сообщения\nи открывает Mini App
+telegram <--> bot : Webhook / Bot API\n[HTTPS, JSON]
+telegram --> mini_app : Открывает Web App\n[HTTPS]
+bot <--> frankfurter : Запрашивает основной курс\n[HTTPS, JSON]
+bot <--> open_exchange : Использует как fallback\n[HTTPS, JSON]
+mini_app <--> open_exchange : Запрашивает курс для UI\n[HTTPS, JSON]
+
+footer Синие блоки — системы проекта; серые блоки — внешние системы
 @enduml
