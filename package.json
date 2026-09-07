@@ -4,8 +4,12 @@
   "description": "",
   "main": "src/main/server.js",
   "scripts": {
+    "dev:backend": "node src/main/server.js",
+    "dev:frontend": "npm run dev --prefix mini-app",
     "start": "node src/main/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "tunnel": "node scripts/tunnel.js",
+    "webhook:prod": "node scripts/set-production-webhook.js"
   },
   "keywords": [],
   "author": "",
@@ -21,5 +25,8 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "fastify": "^5.12.1"
+  },
+  "devDependencies": {
+    "localtunnel": "^2.0.2"
   }
 }

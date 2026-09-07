@@ -80,6 +80,38 @@ pnpm build
 Backend и Mini App развёртываются независимо: backend использует корневой
 `vercel.json`, а Mini App собирается Vite как статический сайт.
 
+## Локальная разработка через LocalTunnel
+
+Сначала установите зависимости в корне и в `mini-app`. Затем откройте три
+терминала и выполните команды по порядку:
+
+```bash
+# 1. Fastify на http://localhost:3000
+pnpm dev:backend
+
+# 2. Svelte/Vite на http://localhost:5173
+pnpm dev:frontend
+
+# 3. Публичный HTTPS-туннель к Vite и установка Telegram webhook
+pnpm tunnel
+```
+
+Один туннель ведёт на Vite. Запросы к `/api` и `/webhook` Vite автоматически
+проксирует в Fastify на порту `3000`. Тот же корневой HTTPS-адрес туннеля можно
+указать в `@BotFather` через `/setmenubutton` как URL Mini App.
+
+LocalTunnel получает публичный URL и автоматически устанавливает Telegram
+webhook на `<URL>/webhook`. При остановке через `Ctrl+C` скрипт сначала возвращает
+webhook на адрес `PRODUCTION_URL` из `.env`, а затем закрывает туннель. Если процесс
+завершился аварийно, восстановите production webhook вручную:
+
+```bash
+pnpm webhook:prod
+```
+
+После перезапуска адрес LocalTunnel может измениться, поэтому при необходимости
+обновите URL кнопки Mini App в `@BotFather`.
+
 ## C4-диаграммы
 
 - [System Context — Level 1](docs/c4-context.puml)
