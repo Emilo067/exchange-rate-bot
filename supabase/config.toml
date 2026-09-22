@@ -425,6 +425,16 @@ entrypoint = "./functions/get-data/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/get-data/*.html" ]
 
+[functions.get-clients]
+enabled = true
+verify_jwt = false
+import_map = "./functions/get-clients/deno.json"
+
+[functions.get-messages]
+enabled = true
+verify_jwt = false
+import_map = "./functions/get-messages/deno.json"
+
 [functions.telegram-webhook]
 enabled = true
 # Telegram does not send Supabase JWTs. The function verifies its own

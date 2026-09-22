@@ -4,12 +4,18 @@ import { ExchangeRateUseCase } from "../../../src/application/ExchangeRateUseCas
 import { FrankfurterAdapter } from "../../../src/infrastructure/frankfurter/FrankfurterAdapter.js";
 import { OpenExchangeAdapter } from "../../../src/infrastructure/open-exchange/OpenExchangeAdapter.js";
 import { TelegramAdapter } from "../../../src/infrastructure/telegram/TelegramAdapter.js";
+import { SupabaseAdapter } from "../../../src/infrastructure/supabase/SupabaseAdapter.js";
 
 const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
 const telegramToken = Deno.env.get("TELEGRAM_TOKEN");
+const interactionRepository = new SupabaseAdapter(
+  Deno.env.get("SUPABASE_URL"),
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+);
 const exchangeRateUseCase = new ExchangeRateUseCase(
   [new FrankfurterAdapter(), new OpenExchangeAdapter()],
   new TelegramAdapter(telegramToken ?? ""),
+  interactionRepository,
 );
 
 function secretMatches(actual: string | null, expected: string): boolean {
@@ -44,7 +50,12 @@ export default {
       return Response.json({ ok: false }, { status: 401 });
     }
 
-    let update: { message?: { chat?: { id?: number }; text?: string } };
+    let update: {
+      message?: {
+        chat?: { id?: number; first_name?: string; username?: string };
+        text?: string;
+      };
+    };
     try {
       update = await request.json();
     } catch {
@@ -57,7 +68,7 @@ export default {
     }
 
     try {
-      await exchangeRateUseCase.execute(message.chat.id, message.text);
+      await exchangeRateUseCase.execute(message.chat, message.text);
       return Response.json({ ok: true });
     } catch (error) {
       console.error("Telegram webhook processing failed", error);

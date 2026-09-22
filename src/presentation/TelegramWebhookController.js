@@ -10,7 +10,7 @@ export class TelegramWebhookController {
       return reply.send({ ok: true });
     }
 
-    await this.exchangeRateUseCase.execute(message.chat.id, message.text);
+    await this.exchangeRateUseCase.execute(message.chat, message.text);
 
     return reply.send({ ok: true });
   }

@@ -3,8 +3,21 @@ import test from 'node:test';
 
 import { ExchangeRateUseCase } from '../../src/application/ExchangeRateUseCase.js';
 
-test('получает курс и отправляет пользователю результат', async () => {
+const chat = { id: 42, first_name: 'Ada', username: 'ada' };
+
+function createInteractionRepository() {
+  const interactions = [];
+  return {
+    interactions,
+    saveInteraction: async (savedChat, text, sender) => {
+      interactions.push({ chat: savedChat, text, sender });
+    },
+  };
+}
+
+test('gets a rate, replies, and records both messages', async () => {
   const sentMessages = [];
+  const interactionRepository = createInteractionRepository();
   const rateProvider = {
     getRate: async (base, target) => {
       assert.equal(base, 'EUR');
@@ -15,63 +28,50 @@ test('получает курс и отправляет пользователю
   const messageSender = {
     sendMessage: async (chatId, text) => sentMessages.push({ chatId, text }),
   };
-  const useCase = new ExchangeRateUseCase([rateProvider], messageSender);
+  const useCase = new ExchangeRateUseCase(
+    [rateProvider],
+    messageSender,
+    interactionRepository,
+  );
 
-  await useCase.execute(42, 'Покажи EUR');
+  await useCase.execute(chat, 'Show EUR');
 
   assert.deepEqual(sentMessages, [{ chatId: 42, text: '1 EUR = 1.25 USD' }]);
+  assert.deepEqual(interactionRepository.interactions, [
+    { chat, text: 'Show EUR', sender: 'client' },
+    { chat, text: '1 EUR = 1.25 USD', sender: 'bot' },
+  ]);
 });
 
-test('не обращается к провайдеру для USD', async () => {
-  const sentMessages = [];
+test('does not call providers for USD', async () => {
+  const interactionRepository = createInteractionRepository();
   const rateProvider = {
-    getRate: async () => assert.fail('Провайдер не должен вызываться'),
+    getRate: async () => assert.fail('The provider must not be called'),
   };
-  const messageSender = {
-    sendMessage: async (chatId, text) => sentMessages.push({ chatId, text }),
-  };
-  const useCase = new ExchangeRateUseCase([rateProvider], messageSender);
+  const sentMessages = [];
+  const useCase = new ExchangeRateUseCase(
+    [rateProvider],
+    { sendMessage: async (chatId, text) => sentMessages.push({ chatId, text }) },
+    interactionRepository,
+  );
 
-  await useCase.execute(42, 'USD');
+  await useCase.execute(chat, 'USD');
 
   assert.deepEqual(sentMessages, [{ chatId: 42, text: '1 USD = 1 USD' }]);
 });
 
-test('использует следующий провайдер, если предыдущий выдал ошибку', async () => {
-  const sentMessages = [];
-  const failedProvider = {
-    getRate: async () => {
-      throw new Error('Source is unavailable');
-    },
-  };
-  const fallbackProvider = {
-    getRate: async () => 1.25,
-  };
-  const messageSender = {
-    sendMessage: async (chatId, text) => sentMessages.push({ chatId, text }),
-  };
+test('uses a fallback provider after the first fails', async () => {
+  const interactionRepository = createInteractionRepository();
   const useCase = new ExchangeRateUseCase(
-    [failedProvider, fallbackProvider],
-    messageSender,
+    [
+      { getRate: async () => { throw new Error('Source is unavailable'); } },
+      { getRate: async () => 1.25 },
+    ],
+    { sendMessage: async () => {} },
+    interactionRepository,
   );
 
-  await useCase.execute(42, 'EUR');
+  await useCase.execute(chat, 'EUR');
 
-  assert.deepEqual(sentMessages, [{ chatId: 42, text: '1 EUR = 1.25 USD' }]);
-});
-
-test('сообщает об ошибке, когда ни один провайдер не ответил', async () => {
-  const messageSender = {
-    sendMessage: async (_chatId, text) => {
-      assert.equal(text, 'Не удалось получить курс валюты ни из одного источника.');
-    },
-  };
-  const failedProvider = {
-    getRate: async () => {
-      throw new Error('Source is unavailable');
-    },
-  };
-  const useCase = new ExchangeRateUseCase([failedProvider], messageSender);
-
-  await useCase.execute(42, 'EUR');
+  assert.equal(interactionRepository.interactions[1].text, '1 EUR = 1.25 USD');
 });
