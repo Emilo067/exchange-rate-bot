@@ -1,4 +1,9 @@
-export async function setTelegramWebhook({ token, baseUrl }) {
+export async function setTelegramWebhook({
+  token,
+  baseUrl,
+  endpointPath = '/webhook',
+  secretToken,
+}) {
   if (!token) {
     throw new Error('Переменная TELEGRAM_TOKEN не найдена в .env');
   }
@@ -13,14 +18,17 @@ export async function setTelegramWebhook({ token, baseUrl }) {
     throw new Error('URL для webhook должен использовать HTTPS');
   }
 
-  const webhookUrl = new URL('/webhook', url.origin).toString();
+  const webhookUrl = new URL(endpointPath, url.origin).toString();
   const telegramUrl = `https://api.telegram.org/bot${token}/setWebhook`;
   const response = await fetch(telegramUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ url: webhookUrl }),
+    body: JSON.stringify({
+      url: webhookUrl,
+      ...(secretToken ? { secret_token: secretToken } : {}),
+    }),
   });
 
   const result = await response.json();

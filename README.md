@@ -59,7 +59,29 @@ pnpm start
 pnpm test
 ```
 
-Webhook ожидает Telegram updates по адресу `POST /webhook`.
+Локальный Fastify webhook ожидает Telegram updates по адресу `POST /webhook`.
+
+## Supabase webhook (production)
+
+Production webhook работает как Supabase Edge Function, а Mini App можно
+оставить на Vercel. В Supabase задайте secrets `TELEGRAM_TOKEN` и
+`TELEGRAM_WEBHOOK_SECRET`, затем разверните функцию и укажите Telegram её URL:
+
+```bash
+supabase functions deploy telegram-webhook --use-api
+pnpm webhook:prod
+```
+
+В `.env` для второй команды укажите `PRODUCTION_URL` как URL Supabase-проекта,
+`TELEGRAM_WEBHOOK_PATH=/functions/v1/telegram-webhook` и такой же
+`TELEGRAM_WEBHOOK_SECRET`. Функция принимает только `POST` и проверяет заголовок
+`X-Telegram-Bot-Api-Secret-Token`, который Telegram добавляет после установки
+webhook.
+
+Функция — только входной HTTP-адаптер: она собирает существующие
+`ExchangeRateUseCase`, `FrankfurterAdapter`, `OpenExchangeAdapter` и
+`TelegramAdapter` из `src`. Поэтому для импорта модулей за пределами
+`supabase/` используется API-deploy (`--use-api`).
 
 ## Mini App
 
