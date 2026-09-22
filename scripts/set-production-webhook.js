@@ -6,6 +6,8 @@ async function start() {
   const result = await setTelegramWebhook({
     token: process.env.TELEGRAM_TOKEN,
     baseUrl: process.env.PRODUCTION_URL,
+    endpointPath: process.env.TELEGRAM_WEBHOOK_PATH,
+    secretToken: process.env.TELEGRAM_WEBHOOK_SECRET,
   });
 
   console.log(`Production webhook установлен: ${result.webhookUrl}`);

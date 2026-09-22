@@ -6,6 +6,7 @@ import { setTelegramWebhook } from './set-telegram-webhook.js';
 const port = 5173;
 const token = process.env.TELEGRAM_TOKEN;
 const productionUrl = process.env.PRODUCTION_URL;
+const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
 
 let tunnel;
 let isClosing = false;
@@ -14,6 +15,8 @@ async function restoreProductionWebhook() {
   const result = await setTelegramWebhook({
     token,
     baseUrl: productionUrl,
+    endpointPath: process.env.TELEGRAM_WEBHOOK_PATH,
+    secretToken: webhookSecret,
   });
 
   console.log(`Webhook возвращён на Vercel: ${result.webhookUrl}`);
@@ -84,6 +87,7 @@ async function start() {
   const result = await setTelegramWebhook({
     token,
     baseUrl: tunnel.url,
+    secretToken: webhookSecret,
   });
   console.log(`Локальный webhook установлен: ${result.webhookUrl}`);
   console.log(`Telegram: ${result.description}`);

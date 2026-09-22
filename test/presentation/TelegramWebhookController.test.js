@@ -16,7 +16,7 @@ function createReply() {
 test('передаёт валидное Telegram-сообщение в use case', async () => {
   const calls = [];
   const controller = new TelegramWebhookController({
-    execute: async (chatId, text) => calls.push({ chatId, text }),
+    execute: async (chat, text) => calls.push({ chat, text }),
   });
   const reply = createReply();
 
@@ -25,7 +25,7 @@ test('передаёт валидное Telegram-сообщение в use case'
     reply,
   );
 
-  assert.deepEqual(calls, [{ chatId: 42, text: 'EUR' }]);
+  assert.deepEqual(calls, [{ chat: { id: 42 }, text: 'EUR' }]);
   assert.deepEqual(reply.payload, { ok: true });
 });
 
