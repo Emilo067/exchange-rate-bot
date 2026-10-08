@@ -1,2 +1,69 @@
-import { useQuery } from '@tanstack/react-query'; import { getClients } from '../../../entities/client/api/getClients'; import { getClientMessages } from '../../../entities/message/api/getClientMessages'; import { useSelectedClient } from '../../../features/select-client/model/useSelectedClient';
-export function ClientsPage(){ const [selected,setSelected]=useSelectedClient(); const clients=useQuery({queryKey:['clients'],queryFn:getClients}); const messages=useQuery({queryKey:['messages',selected],queryFn:()=>getClientMessages(selected!),enabled:!!selected}); if(clients.isLoading)return <main>Loading clients…</main>; if(clients.isError)return <main>Could not load clients <button onClick={()=>clients.refetch()}>Retry</button></main>; return <main className="messenger"><aside><h1>Dialogs</h1>{clients.data?.length ? clients.data.map(c=><button className={selected===c.id?'active':''} key={c.id} onClick={()=>setSelected(c.id)}><strong>{c.first_name || c.username || 'Unknown client'}</strong><small>{c.username && `@${c.username}`}</small></button>):<p>No clients yet</p>}</aside><section><button className="back" onClick={()=>setSelected(null)}>← Dialogs</button>{!selected?<p>Select a client</p>:messages.isLoading?<p>Loading messages…</p>:messages.isError?<p>Could not load messages <button onClick={()=>messages.refetch()}>Retry</button></p>:messages.data?.length?<>{messages.data.map(m=><article className={`message ${m.sender}`} key={m.id}><b>{m.sender}</b><p>{m.text}</p><time>{new Date(m.created_at).toLocaleString()}</time></article>)}</>:<p>No messages with this client</p>}</section></main>; }
+import { useQuery } from "@tanstack/react-query";
+import { getClients } from "../../../entities/client/api/getClients";
+import { getClientMessages } from "../../../entities/message/api/getClientMessages";
+import { useSelectedClient } from "../../../features/select-client/model/useSelectedClient";
+export function ClientsPage() {
+  const [selected, setSelected] = useSelectedClient();
+  const clients = useQuery({ queryKey: ["clients"], queryFn: getClients });
+  const messages = useQuery({
+    queryKey: ["messages", selected],
+    queryFn: () => getClientMessages(selected!),
+    enabled: !!selected,
+  });
+  if (clients.isLoading) return <main>Loading clients…</main>;
+  if (clients.isError)
+    return (
+      <main>
+        Could not load clients{" "}
+        <button onClick={() => clients.refetch()}>Retry</button>
+      </main>
+    );
+  return (
+    <main className="messenger">
+      <aside>
+        <h1>Dialogs</h1>
+        {clients.data?.length ? (
+          clients.data.map((c) => (
+            <button
+              className={selected === c.id ? "active" : ""}
+              key={c.id}
+              onClick={() => setSelected(c.id)}
+            >
+              <strong>{c.first_name || c.username || "Unknown client"}</strong>
+              <small>{c.username && `@${c.username}`}</small>
+            </button>
+          ))
+        ) : (
+          <p>No clients yet</p>
+        )}
+      </aside>
+      <section>
+        <button className="back" onClick={() => setSelected(null)}>
+          ← Dialogs
+        </button>
+        {!selected ? (
+          <p>Select a client</p>
+        ) : messages.isLoading ? (
+          <p>Loading messages…</p>
+        ) : messages.isError ? (
+          <p>
+            Could not load messages{" "}
+            <button onClick={() => messages.refetch()}>Retry</button>
+          </p>
+        ) : messages.data?.length ? (
+          <>
+            {messages.data.map((m) => (
+              <article className={`message ${m.sender}`} key={m.id}>
+                <b>{m.sender}</b>
+                <p>{m.text}</p>
+                <time>{new Date(m.created_at).toLocaleString()}</time>
+              </article>
+            ))}
+          </>
+        ) : (
+          <p>No messages with this client</p>
+        )}
+      </section>
+    </main>
+  );
+}
