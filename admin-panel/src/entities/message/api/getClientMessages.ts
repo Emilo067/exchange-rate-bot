@@ -1,0 +1,2 @@
+import { getEdgeFunction } from '../../../shared/api/edgeFunction'; import type { Message } from '../model/types';
+export async function getClientMessages(clientId: string): Promise<Message[]> { const { messages } = await getEdgeFunction<{messages: Message[]}>('get-messages'); return messages.filter(message => message.client_id === clientId).sort((a,b) => Date.parse(a.created_at)-Date.parse(b.created_at)); }
