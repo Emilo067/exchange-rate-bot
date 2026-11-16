@@ -2,3 +2,7 @@ node_modules/
 .idea/
 .env
 supabase/functions/.env
+.worktrees/
+admin-panel/node_modules/
+admin-panel/dist/
+admin-panel/*.tsbuildinfo
