@@ -54,5 +54,11 @@ export function App() {
   if (access === "checking") return <main className="auth-page">Checking access…</main>;
   if (access === "denied") return <AccessDenied />;
 
-  return <ClientsPage userId={session.user.id} onSignOut={() => void getSupabase().auth.signOut()} />;
+  return (
+    <ClientsPage
+      userEmail={session.user.email}
+      userId={session.user.id}
+      onSignOut={() => void getSupabase().auth.signOut()}
+    />
+  );
 }

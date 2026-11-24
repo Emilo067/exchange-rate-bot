@@ -6,10 +6,11 @@ import { useSelectedClient } from "../../../features/select-client/model/useSele
 
 type ClientsPageProps = {
   userId?: string;
+  userEmail?: string;
   onSignOut?: () => void;
 };
 
-export function ClientsPage({ userId, onSignOut }: ClientsPageProps) {
+export function ClientsPage({ userId, userEmail, onSignOut }: ClientsPageProps) {
   const [selected, setSelected] = useSelectedClient();
   const clients = useQuery({ queryKey: ["clients", userId], queryFn: getClients });
   const selectedClient = clients.data?.find((client) => client.id === selected);
@@ -30,14 +31,33 @@ export function ClientsPage({ userId, onSignOut }: ClientsPageProps) {
       </main>
     );
 
+  const profileInitial = userEmail?.trim().slice(0, 1).toUpperCase() || "A";
+
   return (
-    <main className="messenger">
+    <main className="admin-shell">
+      <header className="app-header">
+        <div className="app-brand">
+          <span className="app-brand-mark" aria-hidden="true">E</span>
+          <div>
+            <strong>Exchange admin</strong>
+            <span>Support workspace</span>
+          </div>
+        </div>
+        <div className="admin-profile">
+          <span className="admin-profile-avatar" aria-hidden="true">{profileInitial}</span>
+          <div className="admin-profile-details">
+            <strong>Administrator</strong>
+            <span>{userEmail || "Signed-in account"}</span>
+          </div>
+          {onSignOut ? <button className="logout-button" onClick={onSignOut}>Log out</button> : null}
+        </div>
+      </header>
+      <div className="messenger">
       <aside className="client-panel">
         <div className="panel-heading">
           <p className="eyebrow">Admin panel</p>
           <h1>Dialogs</h1>
           <span>{clients.data?.length ?? 0} clients</span>
-          {onSignOut ? <button className="sign-out" onClick={onSignOut}>Sign out</button> : null}
         </div>
         <div className="client-list">
           {clients.data?.length ? (
@@ -111,6 +131,7 @@ export function ClientsPage({ userId, onSignOut }: ClientsPageProps) {
           </>
         )}
       </section>
+      </div>
     </main>
   );
 }
