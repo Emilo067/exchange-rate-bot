@@ -72,6 +72,51 @@ supabase functions deploy telegram-webhook --use-api
 pnpm webhook:prod
 ```
 
+## Admin panel access and Realtime
+
+The admin panel uses Supabase Auth with email and password. The browser needs
+only public configuration in `admin-panel/.env`:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_or_publishable_key
+```
+
+Never put `SUPABASE_SERVICE_ROLE_KEY` in the admin-panel environment or
+frontend bundle.
+
+### Provision the first administrator
+
+1. In Supabase Dashboard, create a user under **Authentication → Users** and
+   set its email and password.
+2. After applying the `secure_admin_realtime` database migration, copy that
+   user's UUID and run this in the Dashboard SQL Editor:
+
+```sql
+insert into public.admin_users (user_id)
+values ('AUTH_USER_UUID');
+```
+
+Only users listed in `public.admin_users` can read clients, messages, or
+receive message events through Realtime.
+
+### Production rollout
+
+Review the database migration first, then apply it:
+
+```bash
+pnpm exec supabase db push --dry-run --remote
+pnpm exec supabase db push --remote
+```
+
+The existing read functions were also secured. Deploy them after the database
+migration:
+
+```bash
+supabase functions deploy get-clients --use-api
+supabase functions deploy get-messages --use-api
+```
+
 В `.env` для второй команды укажите `PRODUCTION_URL` как URL Supabase-проекта,
 `TELEGRAM_WEBHOOK_PATH=/functions/v1/telegram-webhook` и такой же
 `TELEGRAM_WEBHOOK_SECRET`. Функция принимает только `POST` и проверяет заголовок

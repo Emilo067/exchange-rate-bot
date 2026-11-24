@@ -1,10 +1,19 @@
-import { getEdgeFunction } from "../../../shared/api/edgeFunction";
+import { getSupabase } from "../../../shared/api/supabase";
 import type { Message } from "../model/types";
+
 export async function getClientMessages(clientId: string): Promise<Message[]> {
-  const { messages } = await getEdgeFunction<{ messages: Message[] }>(
-    "get-messages",
-  );
-  return messages
-    .filter((message) => message.client_id === clientId)
-    .sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
+  const { data, error } = await getSupabase()
+    .from("messages")
+    .select("id, client_id, sender, text, created_at")
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: false })
+    .limit(1000);
+
+  if (error) throw error;
+  return (data ?? [])
+    .map((message) => ({
+      ...message,
+      client_id: String(message.client_id),
+    }))
+    .reverse() as Message[];
 }

@@ -9,6 +9,12 @@ CREATE TABLE "public"."clients" (
 ALTER TABLE "public"."clients"
   ENABLE ROW LEVEL SECURITY;
 
+CREATE POLICY "approved administrators can read clients"
+  ON "public"."clients"
+  FOR SELECT
+  TO "authenticated"
+  USING ((SELECT public.is_admin()));
+
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."clients" TO "anon", "authenticated";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."clients" TO "service_role";

@@ -1,6 +1,6 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 
-import { corsHeaders, json } from '../_shared/admin.ts';
+import { corsHeaders, json, requireAdmin } from '../_shared/admin.ts';
 import { selectRows } from '../_shared/database.ts';
 
 export default {
@@ -11,6 +11,9 @@ export default {
     if (request.method !== 'GET') {
       return new Response('Method Not Allowed', { status: 405, headers: corsHeaders });
     }
+    const authorizationError = await requireAdmin(request);
+    if (authorizationError) return authorizationError;
+
     const result = await selectRows(
       'messages',
       'id,client_id,sender,text,created_at',
