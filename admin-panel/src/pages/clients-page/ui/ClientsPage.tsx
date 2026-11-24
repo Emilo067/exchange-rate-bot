@@ -1,17 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { getClients } from "../../../entities/client/api/getClients";
 import { getClientMessages } from "../../../entities/message/api/getClientMessages";
+import { useMessageRealtime } from "../../../entities/message/model/useMessageRealtime";
 import { useSelectedClient } from "../../../features/select-client/model/useSelectedClient";
 
-export function ClientsPage() {
+type ClientsPageProps = {
+  userId?: string;
+  onSignOut?: () => void;
+};
+
+export function ClientsPage({ userId, onSignOut }: ClientsPageProps) {
   const [selected, setSelected] = useSelectedClient();
-  const clients = useQuery({ queryKey: ["clients"], queryFn: getClients });
+  const clients = useQuery({ queryKey: ["clients", userId], queryFn: getClients });
   const selectedClient = clients.data?.find((client) => client.id === selected);
   const messages = useQuery({
-    queryKey: ["messages", selected],
+    queryKey: ["messages", userId, selected],
     queryFn: () => getClientMessages(selected!),
     enabled: !!selected,
   });
+
+  useMessageRealtime(userId, selected);
 
   if (clients.isLoading) return <main>Loading clients…</main>;
   if (clients.isError)
@@ -29,6 +37,7 @@ export function ClientsPage() {
           <p className="eyebrow">Admin panel</p>
           <h1>Dialogs</h1>
           <span>{clients.data?.length ?? 0} clients</span>
+          {onSignOut ? <button className="sign-out" onClick={onSignOut}>Sign out</button> : null}
         </div>
         <div className="client-list">
           {clients.data?.length ? (

@@ -12,6 +12,12 @@ CREATE TABLE "public"."messages" (
 ALTER TABLE "public"."messages"
   ENABLE ROW LEVEL SECURITY;
 
+CREATE POLICY "approved administrators can read messages"
+  ON "public"."messages"
+  FOR SELECT
+  TO "authenticated"
+  USING ((SELECT public.is_admin()));
+
 CREATE TRIGGER update_client_last_message
   AFTER INSERT ON public.messages
   FOR EACH ROW
@@ -24,3 +30,7 @@ GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON
 REVOKE ALL ON TABLE "public"."messages" FROM "postgres";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."messages" TO "postgres";
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE "public"."messages";
+
+ALTER PUBLICATION "supabase_realtime" SET (publish = 'insert');

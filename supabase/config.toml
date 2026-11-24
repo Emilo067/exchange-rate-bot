@@ -427,12 +427,12 @@ entrypoint = "./functions/get-data/index.ts"
 
 [functions.get-clients]
 enabled = true
-verify_jwt = false
+verify_jwt = true
 import_map = "./functions/get-clients/deno.json"
 
 [functions.get-messages]
 enabled = true
-verify_jwt = false
+verify_jwt = true
 import_map = "./functions/get-messages/deno.json"
 
 [functions.telegram-webhook]
